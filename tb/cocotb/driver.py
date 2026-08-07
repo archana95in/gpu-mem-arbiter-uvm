@@ -1,9 +1,13 @@
-"""ArbDriver -- drives one client's req/addr lines per ArbReqItem and
+"""ArbDriver -- drives ONE client's req/addr lines per ArbReqItem and
 waits for that client's grant bit before completing the item.
 
-`req` and `gnt` are packed bit vectors on the DUT (logic [NUM_CLIENTS-1:0]),
-so they're manipulated as plain integers/bitmasks here. `addr` is an
-unpacked array port, indexed directly per client.
+Phase 3 note: each ArbDriver instance is bound to a single client at
+construction (one instance per agent/port). This is what lets multiple
+clients hold `req` at the same time -- Phase 2 had a single driver
+servicing items for any client one at a time through one sequencer,
+which made real contention undrivable. `addr` is an unpacked array port,
+indexed directly per client; `req`/`gnt` are packed bit vectors, handled
+via ReqBus / plain bitmask reads respectively.
 """
 
 from pyuvm import uvm_driver, ConfigDB
@@ -11,8 +15,13 @@ from cocotb.triggers import RisingEdge
 
 
 class ArbDriver(uvm_driver):
+    def __init__(self, name, parent, client):
+        super().__init__(name, parent)
+        self.client = client
+
     def build_phase(self):
         self.dut = ConfigDB().get(self, "", "DUT")
+        self.req_bus = ConfigDB().get(self, "", "REQ_BUS")
 
     async def run_phase(self):
         while True:
@@ -22,12 +31,13 @@ class ArbDriver(uvm_driver):
 
     async def _drive(self, item):
         dut = self.dut
+        client = self.client
 
-        dut.addr[item.client].value = item.addr
-        dut.req.value = int(dut.req.value) | (1 << item.client)
+        dut.addr[client].value = item.addr
+        self.req_bus.assert_req(client)
 
         await RisingEdge(dut.clk)
-        while not ((int(dut.gnt.value) >> item.client) & 1):
+        while not ((int(dut.gnt.value) >> client) & 1):
             await RisingEdge(dut.clk)
 
-        dut.req.value = int(dut.req.value) & ~(1 << item.client)
+        self.req_bus.deassert_req(client)
