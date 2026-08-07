@@ -1,13 +1,13 @@
 top:
-  cover_percentage: 81.82
-  coverage: 18
+  cover_percentage: 86.36
+  coverage: 19
   size: 22
   type: <class 'cocotb_coverage.coverage.CoverItem'>
 top.aging_override_used:
   at_least: 1
   bins:_hits:
-    false: 14362
-    true: 1
+    false: 14380
+    true: 3
   cover_percentage: 100.0
   coverage: 2
   size: 2
@@ -16,9 +16,9 @@ top.aging_override_used:
 top.client_granted:
   at_least: 1
   bins:_hits:
-    0: 5968
-    1: 4571
-    2: 3824
+    0: 5992
+    1: 4554
+    2: 3837
   cover_percentage: 100.0
   coverage: 3
   size: 3
@@ -27,15 +27,15 @@ top.client_granted:
 top.client_x_contention:
   at_least: 1
   bins:_hits:
-    (0, 'full'): 4707
-    (0, 'solo'): 734
-    (0, 'two-way'): 527
-    (1, 'full'): 3721
-    (1, 'solo'): 247
-    (1, 'two-way'): 603
-    (2, 'full'): 3113
-    (2, 'solo'): 220
-    (2, 'two-way'): 491
+    (0, 'full'): 4722
+    (0, 'solo'): 756
+    (0, 'two-way'): 514
+    (1, 'full'): 3736
+    (1, 'solo'): 219
+    (1, 'two-way'): 599
+    (2, 'full'): 3124
+    (2, 'solo'): 228
+    (2, 'two-way'): 485
   cover_percentage: 100.0
   coverage: 9
   size: 9
@@ -44,9 +44,9 @@ top.client_x_contention:
 top.contention_level:
   at_least: 1
   bins:_hits:
-    full: 11541
-    solo: 1201
-    two-way: 1621
+    full: 11582
+    solo: 1203
+    two-way: 1598
   cover_percentage: 100.0
   coverage: 3
   size: 3
@@ -57,16 +57,16 @@ top.repeated_aging_event:
   bins:_hits:
     0: 0
     1: 0
-    2: 1
-  cover_percentage: 0.0
-  coverage: 0
+    2: 3
+  cover_percentage: 33.33
+  coverage: 1
   size: 3
   type: <class 'cocotb_coverage.coverage.CoverPoint'>
   weight: 1
 top.simultaneous_aging_tiebreak:
   at_least: 1
   bins:_hits:
-    false: 14363
+    false: 14383
     true: 0
   cover_percentage: 50.0
   coverage: 1

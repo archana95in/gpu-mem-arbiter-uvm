@@ -14,8 +14,8 @@ interface:
   - `simultaneous_tiebreak`: whether more than one client was aged-out
     on that same decision.
 
-These are peeked via internal hierarchical signals (`dut.age`,
-`dut.busy_cnt`), not new DUT ports -- the pin-level interface in
+These are peeked via internal hierarchical signals (`dut.u_dut.age`,
+`dut.u_dut.busy_cnt`), not new DUT ports -- the pin-level interface in
 SPEC.md section 3 is unchanged. `age`/`busy_cnt` are peeked rather than
 the combinational `aged_out` signal deliberately: they're real
 registers, so their value is stable for an entire clock cycle and can
@@ -27,6 +27,14 @@ actually land just *after* it instead (confirmed by dumping raw values:
 grants showed up paired with `busy_cnt==3`, which is only possible
 immediately after a grant, not before one), silently zeroing every
 aging_override detection. Registers don't have that ordering hazard.
+
+Phase 4 note: COCOTB_TOPLEVEL points at gpu_mem_arbiter_tb_top (a thin
+wrapper needed because Icarus doesn't implement `bind` -- see
+tb/sva/gpu_mem_arbiter_assertions.sv), not at gpu_mem_arbiter directly
+anymore. clk/req/gnt/etc. are forwarded through at the wrapper's own
+boundary under the same names, so those references are unchanged; only
+age/busy_cnt (internal-only, no port) need the extra `.u_dut.` hop to
+reach the real DUT instance inside the wrapper.
 """
 
 from pyuvm import uvm_component, uvm_analysis_port, ConfigDB
@@ -73,9 +81,9 @@ class ArbMonitor(uvm_component):
             # correct "going into the decision" state for whatever
             # grant (if any) appears at the *next* RisingEdge.
             for i in range(num_clients):
-                if dut.age[i].value.is_resolvable:
-                    prev_age[i] = int(dut.age[i].value)
-            if dut.busy_cnt.value.is_resolvable:
-                prev_busy = int(dut.busy_cnt.value)
+                if dut.u_dut.age[i].value.is_resolvable:
+                    prev_age[i] = int(dut.u_dut.age[i].value)
+            if dut.u_dut.busy_cnt.value.is_resolvable:
+                prev_busy = int(dut.u_dut.busy_cnt.value)
             if dut.req.value.is_resolvable:
                 prev_req = int(dut.req.value)

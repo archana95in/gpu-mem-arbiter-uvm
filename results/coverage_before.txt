@@ -1,29 +1,29 @@
-top : <cocotb_coverage.coverage.CoverItem object at 0x1085de610>, coverage=18, size=22 
-   top.aging_override_used : <cocotb_coverage.coverage.CoverPoint object at 0x1085de640>, coverage=2, size=2 
-      BIN True : 1
-      BIN False : 14362
-   top.client_granted : <cocotb_coverage.coverage.CoverPoint object at 0x1085de5b0>, coverage=3, size=3 
-      BIN 0 : 5968
-      BIN 1 : 4571
-      BIN 2 : 3824
-   top.client_x_contention : <cocotb_coverage.coverage.CoverCross object at 0x1085de5e0>, coverage=9, size=9 
-      BIN (0, 'solo') : 734
-      BIN (0, 'two-way') : 527
-      BIN (0, 'full') : 4707
-      BIN (1, 'solo') : 247
-      BIN (1, 'two-way') : 603
-      BIN (1, 'full') : 3721
-      BIN (2, 'solo') : 220
-      BIN (2, 'two-way') : 491
-      BIN (2, 'full') : 3113
-   top.contention_level : <cocotb_coverage.coverage.CoverPoint object at 0x1085de670>, coverage=3, size=3 
-      BIN solo : 1201
-      BIN two-way : 1621
-      BIN full : 11541
-   top.repeated_aging_event : <cocotb_coverage.coverage.CoverPoint object at 0x108602130>, coverage=0, size=3 
+top : <cocotb_coverage.coverage.CoverItem object at 0x10a5b75e0>, coverage=19, size=22 
+   top.aging_override_used : <cocotb_coverage.coverage.CoverPoint object at 0x10a5b7610>, coverage=2, size=2 
+      BIN True : 3
+      BIN False : 14380
+   top.client_granted : <cocotb_coverage.coverage.CoverPoint object at 0x10a5b7580>, coverage=3, size=3 
+      BIN 0 : 5992
+      BIN 1 : 4554
+      BIN 2 : 3837
+   top.client_x_contention : <cocotb_coverage.coverage.CoverCross object at 0x10a5b75b0>, coverage=9, size=9 
+      BIN (0, 'solo') : 756
+      BIN (0, 'two-way') : 514
+      BIN (0, 'full') : 4722
+      BIN (1, 'solo') : 219
+      BIN (1, 'two-way') : 599
+      BIN (1, 'full') : 3736
+      BIN (2, 'solo') : 228
+      BIN (2, 'two-way') : 485
+      BIN (2, 'full') : 3124
+   top.contention_level : <cocotb_coverage.coverage.CoverPoint object at 0x10a5b7640>, coverage=3, size=3 
+      BIN solo : 1203
+      BIN two-way : 1598
+      BIN full : 11582
+   top.repeated_aging_event : <cocotb_coverage.coverage.CoverPoint object at 0x10a5da100>, coverage=1, size=3 
       BIN 0 : 0
       BIN 1 : 0
-      BIN 2 : 1
-   top.simultaneous_aging_tiebreak : <cocotb_coverage.coverage.CoverPoint object at 0x1085deaf0>, coverage=1, size=2 
+      BIN 2 : 3
+   top.simultaneous_aging_tiebreak : <cocotb_coverage.coverage.CoverPoint object at 0x10a5b7ac0>, coverage=1, size=2 
       BIN True : 0
-      BIN False : 14363
+      BIN False : 14383
