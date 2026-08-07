@@ -1,0 +1,10 @@
+.venv/
+sim_build/
+results.xml
+results.xml.rst
+__pycache__/
+*.pyc
+.pytest_cache/
+*.vcd
+a.out
+.DS_Store
