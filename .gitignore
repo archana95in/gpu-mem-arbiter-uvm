@@ -8,3 +8,4 @@ __pycache__/
 *.vcd
 a.out
 .DS_Store
+tb/analysis/worst_case_sequences.json

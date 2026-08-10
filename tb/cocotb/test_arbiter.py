@@ -35,6 +35,7 @@ from sequences import (
     RepeatedAgingSeq,
     SimultaneousAgingSeq,
     RandomContentionSeq,
+    TargetedAgingSeq,
 )
 
 
@@ -90,6 +91,16 @@ class ArbiterRegressionTest(uvm_test):
         self.logger.info("--- AgingStressSeq: DISPLAY held against COMPUTE+TEXTURE flood ---")
         await reset_dut(dut)
         await AgingStressSeq(num_requests=200).run()
+
+        self.logger.info("--- TargetedAgingSeq: COMPUTE pushed to its own age threshold (x2, for repeated_aging_event) ---")
+        for _ in range(2):
+            await reset_dut(dut)
+            await TargetedAgingSeq(target=0, solo_decisions=50, contend_decisions=50, periodic_period=3).run()
+
+        self.logger.info("--- TargetedAgingSeq: TEXTURE pushed to its own age threshold (x2, for repeated_aging_event) ---")
+        for _ in range(2):
+            await reset_dut(dut)
+            await TargetedAgingSeq(target=1, solo_decisions=25, contend_decisions=25, periodic_period=3).run()
 
         self.logger.info("--- RepeatedAgingSeq: each class held >2x its own age threshold ---")
         for client in (0, 1, 2):

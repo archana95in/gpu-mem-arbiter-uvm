@@ -20,6 +20,7 @@ from seq_item import ArbReqItem
 
 # Port map (SPEC.md section 2): 0 = COMPUTE, 1 = TEXTURE, 2 = DISPLAY
 AGE_THRESHOLD = {0: 32, 1: 16, 2: 8}
+WEIGHT = {0: 5, 1: 3, 2: 2}
 DECISION_CYCLES = 4  # burst length (SPEC.md section 3) -- cycles per arbitration decision
 
 
@@ -233,3 +234,94 @@ class RandomContentionSeq:
                                  f"rand_c{client}"), _seqr(client))
             for client in (0, 1, 2)
         ])
+
+
+class PeriodicPerClientSeq(uvm_sequence):
+    """Requests once every `period` decisions, idling the rest of the
+    time -- deterministic (not random) building block for
+    TargetedAgingSeq's "higher-weight other" role."""
+
+    def __init__(self, client, num_decisions, period, addr_base=0, name="PeriodicPerClientSeq"):
+        super().__init__(name)
+        self.client = client
+        self.num_decisions = num_decisions
+        self.period = period
+        self.addr_base = addr_base
+
+    async def body(self):
+        dut = ConfigDB().get(None, "", "DUT")
+        for k in range(self.num_decisions):
+            if k % self.period == 0:
+                item = ArbReqItem(client=self.client, addr=self.addr_base + k)
+                await self.start_item(item)
+                await self.finish_item(item)
+            else:
+                await ClockCycles(dut.clk, DECISION_CYCLES)
+
+
+class TargetedAgingSeq:
+    """Phase 5 (PHASE5_PLAN.md section 1/2): directed sequence that
+    pushes a target client's age up to its own threshold, refuting the
+    "structurally unreachable" hypothesis for COMPUTE and TEXTURE.
+
+    Mechanism (found via tb/analysis/wrr_bound_search.py's adversarial
+    search, cleaned up by tb/analysis/find_directed_pattern.py, and
+    cross-validated against the real RTL in
+    tb/analysis/test_wrr_cross_validate.py -- all three agree exactly):
+    the target requests solo for a while first, winning every decision
+    and building a deep negative credit debt (credit -= TOTAL_WEIGHT on
+    every win, with nothing to offset it while uncontested). Once real
+    contention starts, that debt takes many decisions of "+weight per
+    miss" to climb back to competitive -- long enough to reach the
+    target's age threshold -- *provided* the two competing clients
+    share the win burden rather than one of them denying it solo (a
+    solo denier's own credit drains at -TOTAL_WEIGHT per win just as
+    fast as the target's recovers, and the two cross before reaching
+    the threshold). So the lower-weight of the two "other" clients
+    requests continuously, and the higher-weight one only periodically
+    -- splitting the debiting between two accounts instead of draining
+    one.
+    """
+
+    def __init__(self, target, solo_decisions, contend_decisions, periodic_period=3):
+        self.target = target
+        self.solo_decisions = solo_decisions
+        self.contend_decisions = contend_decisions
+        self.periodic_period = periodic_period
+
+    async def run(self):
+        dut = ConfigDB().get(None, "", "DUT")
+        others = [i for i in range(3) if i != self.target]
+        others_by_weight = sorted(others, key=lambda i: WEIGHT[i])
+        low_weight_other, high_weight_other = others_by_weight[0], others_by_weight[1]
+
+        flag = _StopFlag()
+        total_decisions = self.solo_decisions + self.contend_decisions + 10  # margin
+        target_seq = SoloRequestSeq(
+            self.target, total_decisions, 0x1000 * self.target,
+            f"targeted_t{self.target}", stop_flag=flag,
+        )
+        target_task = cocotb.start_soon(target_seq.start(_seqr(self.target)))
+
+        # Solo phase: target accumulates a deep credit deficit alone.
+        await ClockCycles(dut.clk, self.solo_decisions * DECISION_CYCLES)
+
+        # Contend phase: low-weight other floods continuously,
+        # high-weight other only periodically (shares the win burden).
+        low_seq = SoloRequestSeq(
+            low_weight_other, self.contend_decisions + 10, 0x1000 * low_weight_other,
+            f"targeted_low{low_weight_other}", stop_flag=flag,
+        )
+        low_task = cocotb.start_soon(low_seq.start(_seqr(low_weight_other)))
+        high_seq = PeriodicPerClientSeq(
+            high_weight_other, self.contend_decisions, self.periodic_period,
+            0x1000 * high_weight_other, f"targeted_high{high_weight_other}",
+        )
+        high_task = cocotb.start_soon(high_seq.start(_seqr(high_weight_other)))
+
+        await ClockCycles(dut.clk, self.contend_decisions * DECISION_CYCLES)
+        flag.stopped = True
+
+        await high_task  # finite, runs to completion on its own
+        await target_task
+        await low_task
