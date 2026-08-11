@@ -7,5 +7,7 @@ __pycache__/
 .pytest_cache/
 *.vcd
 a.out
+*.out
 .DS_Store
+.claude/
 tb/analysis/worst_case_sequences.json
